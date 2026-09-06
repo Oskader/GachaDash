@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/page-header'
 import { EventRow } from '@/components/event-row'
 import { ChecklistSection } from './components/ChecklistSection'
 import { SubNav } from './components/SubNav'
+import { WeeklySection } from './components/WeeklySection'
 import { getI18n } from '@/lib/i18n'
 import { isPausedGame } from '@/lib/game-status'
 import { phaseAt, requestNow } from '@/lib/urgency'
@@ -88,13 +89,16 @@ export default async function GamePage({ params }: Props) {
 
   const rows = events ?? []
 
+  // Excluir eventos semanales (van en su propia sección con checklist).
+  const eventRows = rows.filter((e) => e.kind !== 'weekly')
+
   // Lo anunciado va aparte de lo que ya se puede jugar. La wiki lista las dos
   // cosas en la misma tabla y sin separarlas la cabecera contaba como activos
   // eventos que aún no han llegado.
-  const activeEvents = rows.filter(
+  const activeEvents = eventRows.filter(
     (e) => phaseAt(e.start_date, e.end_date, now) === 'live'
   )
-  const upcomingEvents = rows
+  const upcomingEvents = eventRows
     .filter((e) => phaseAt(e.start_date, e.end_date, now) === 'upcoming')
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
   const weeklyEvents = rows.filter((e) => e.kind === 'weekly')
@@ -154,24 +158,8 @@ export default async function GamePage({ params }: Props) {
           </section>
         )}
 
-        {/* Eventos semanales repetitivos: Cyclical Extrapolation, etc. */}
-        {weeklyEvents.length > 0 && (
-          <section>
-            <h2 className="eyebrow mb-3">{t.game.weeklyHeading}</h2>
-            <div>
-              {weeklyEvents.map((event) => (
-                <EventRow
-                  key={event.id}
-                  event={event}
-                  accentColor={game.color_accent}
-                  locale={locale}
-                  words={t.urgency}
-                  andMore={t.event.andMore}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Eventos semanales repetitivos con checklist local (Cyclical Extrapolation, etc.) */}
+        <WeeklySection items={weeklyEvents} accentColor={game.color_accent} locale={t.game} />
 
         <ChecklistSection
           items={checklistItems ?? []}
