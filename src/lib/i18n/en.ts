@@ -85,6 +85,7 @@ export const en: Dictionary = {
     bannersTitle: 'Banners',
     bannersNote: 'Current and upcoming gacha banners.',
     noBanners: 'No active banners right now.',
+    weeklyHeading: 'Weekly',
   },
 
   // Games on pause (game-status.ts): placeholder with the game's identity.

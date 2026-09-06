@@ -97,6 +97,7 @@ export default async function GamePage({ params }: Props) {
   const upcomingEvents = rows
     .filter((e) => phaseAt(e.start_date, e.end_date, now) === 'upcoming')
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
+  const weeklyEvents = rows.filter((e) => e.kind === 'weekly')
 
   return (
     <main className="mx-auto max-w-lg px-4 pb-10">
@@ -144,6 +145,25 @@ export default async function GamePage({ params }: Props) {
                   event={event}
                   accentColor={game.color_accent}
                   upcoming
+                  locale={locale}
+                  words={t.urgency}
+                  andMore={t.event.andMore}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Eventos semanales repetitivos: Cyclical Extrapolation, etc. */}
+        {weeklyEvents.length > 0 && (
+          <section>
+            <h2 className="eyebrow mb-3">{t.game.weeklyHeading}</h2>
+            <div>
+              {weeklyEvents.map((event) => (
+                <EventRow
+                  key={event.id}
+                  event={event}
+                  accentColor={game.color_accent}
                   locale={locale}
                   words={t.urgency}
                   andMore={t.event.andMore}

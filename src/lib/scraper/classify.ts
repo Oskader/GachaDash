@@ -35,7 +35,7 @@
  * hasta que esté aplicada, types.ts lleva el enum a mano (override temporal).
  */
 
-export type EventKind = 'banner' | 'mission' | 'login_event' | 'other'
+export type EventKind = 'banner' | 'mission' | 'login_event' | 'weekly' | 'other'
 
 /** Umbrales de la heurística, en días. */
 export interface GameRules {
@@ -71,7 +71,10 @@ const LOGIN_EVENT_RE = /\b(?:fund|anniversary|login|check.?in|gift|endgame)\b/i
 // Rutina repetible con nombre propio: nunca banner aunque la ventana sea
 // corta ("Shiyu Defense", "Combat Training").
 const NON_BANNER_RE =
-  /\b(?:defense|training|fund|anniversary|endgame|login|gift|cyclical)\b/i
+  /\b(?:defense|training|fund|anniversary|endgame|login|gift)\b/i
+
+// Evento semanal repetitivo: nunca banner. Va aparte en su propia sección.
+const WEEKLY_RE = /\bcyclical\b/i
 
 /** Duración en días fraccionarios; NaN si alguna fecha no se interpreta. */
 function durationDays(start_date: string, end_date: string): number {
@@ -102,6 +105,9 @@ export function classifyEvent(
 
   // R3 — rutina repetible: nunca banner.
   if (NON_BANNER_RE.test(title)) return 'mission'
+
+  // R3b — evento semanal repetitivo: va en su propia sección.
+  if (WEEKLY_RE.test(title)) return 'weekly'
 
   // Sin duración interpretable no hay decisión posible.
   if (!Number.isFinite(days)) return 'other'

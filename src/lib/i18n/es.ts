@@ -87,6 +87,7 @@ export const es = {
     bannersTitle: 'Banners',
     bannersNote: 'Banners de gacha actuales y próximos.',
     noBanners: 'No hay banners activos ahora mismo.',
+    weeklyHeading: 'Semanal',
   },
 
   // Juegos en pausa (game-status.ts): placeholder con identidad del juego.

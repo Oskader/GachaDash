@@ -275,22 +275,23 @@ export function parseHsrWarps(html: string, section: string, host: string): Pars
     }
 
     // Fila con tipo + banners
-    if (cells.length < 2 || !currentDates) return
+    if (cells.length < 2) return
+    if (!currentDates) return
 
     const type = $(cells[0]).text().toLowerCase()
     // Solo Character Event y Light Cone Event.
     if (!/character|light cone/.test(type)) return
 
     const bannersCell = $(cells[1])
+    const dates = currentDates
     bannersCell.find('.warp-banners div').each((_j, bannerDiv) => {
       // El link con el texto es el segundo <a> (el primero es el de la imagen).
-      const links = $(bannerDiv).find('a')
-      const link = links.filter((_i, a) => {
+      const linkEl = $(bannerDiv).find('a').filter((_i, a) => {
         const href = $(a).attr('href') ?? ''
-        return href.startsWith('/wiki/') && !href.includes(':') && $(a).text().trim()
+        return href.startsWith('/wiki/') && !href.includes(':') && $(a).text().trim() !== ''
       }).first()
 
-      const title = cleanTitle(link.text())
+      const title = cleanTitle($(linkEl).text())
       if (!title) return
 
       const img = $(bannerDiv).find('img').first()
@@ -307,9 +308,10 @@ export function parseHsrWarps(html: string, section: string, host: string): Pars
 
       out.push({
         title,
-        ...currentDates,
+        start_date: dates.start_date,
+        end_date: dates.end_date,
         section,
-        pageTitle: link.attr('title') || undefined,
+        pageTitle: $(linkEl).attr('title') || undefined,
         image_url: absoluteImageUrl(src, host),
       })
     })

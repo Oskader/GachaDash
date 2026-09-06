@@ -234,6 +234,7 @@ export type Database = {
         | "banner"
         | "mission"
         | "login_event"
+        | "weekly"
         | "other"
       game_slug:
         | "honkai-star-rail"
