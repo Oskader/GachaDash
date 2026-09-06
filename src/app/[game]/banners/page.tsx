@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { EventRow } from '@/components/event-row'
-import { ChecklistSection } from './components/ChecklistSection'
-import { SubNav } from './components/SubNav'
+import { SubNav } from '../components/SubNav'
 import { getI18n } from '@/lib/i18n'
 import { isPausedGame } from '@/lib/game-status'
 import { phaseAt, requestNow } from '@/lib/urgency'
@@ -26,7 +25,6 @@ async function getGame(slug: string) {
   return data
 }
 
-// Sin esto las cuatro páginas de juego compartían título y descripción.
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { game: slug } = await params
   const { t } = await getI18n()
@@ -35,14 +33,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!game) return { title: t.game.notFound }
 
   return {
-    title: game.name,
-    description: isPausedGame(game.slug)
-      ? `${t.paused.comingSoon}. ${t.paused.note}`
-      : t.game.metaDescription.replace('{game}', game.name),
+    title: `${game.name} — ${t.game.bannersTitle}`,
+    description: t.game.bannersNote,
   }
 }
 
-export default async function GamePage({ params }: Props) {
+export default async function BannersPage({ params }: Props) {
   const { game: gameSlug } = await params
   const { locale, t } = await getI18n()
   const supabase = await createClient()
@@ -51,8 +47,8 @@ export default async function GamePage({ params }: Props) {
   const game = await getGame(gameSlug)
   if (!game) notFound()
 
-  // Pausado (game-status.ts): placeholder con la identidad del juego — nombre
-  // y stripe de color — y nada más. Nunca notFound(): la ruta sigue válida.
+  // Pausado: el SubNav ya oculta el link, pero el acceso directo por URL
+  // muestra el placeholder en vez de notFound().
   if (isPausedGame(game.slug)) {
     return (
       <main className="mx-auto max-w-lg px-4 pb-10">
@@ -61,7 +57,6 @@ export default async function GamePage({ params }: Props) {
           accentColor={game.color_accent}
           meta={t.paused.comingSoon}
         />
-
         <div className="border border-line bg-panel px-5 py-8 text-center">
           <p className="eyebrow mb-3">{t.paused.comingSoon}</p>
           <p className="text-sm text-dim">{t.paused.note}</p>
@@ -70,31 +65,21 @@ export default async function GamePage({ params }: Props) {
     )
   }
 
-  const [{ data: events }, { data: checklistItems }] = await Promise.all([
-    supabase
-      .from('events')
-      .select('*')
-      .eq('game_id', game.id)
-      .eq('is_active', true)
-      .gte('end_date', new Date(now).toISOString())
-      .order('end_date', { ascending: true })
-      .limit(20),
-    supabase
-      .from('checklist_items')
-      .select('*')
-      .eq('game_id', game.id)
-      .order('sort_order'),
-  ])
+  const { data: events } = await supabase
+    .from('events')
+    .select('*')
+    .eq('game_id', game.id)
+    .eq('is_active', true)
+    .eq('kind', 'banner')
+    .gte('end_date', new Date(now).toISOString())
+    .order('end_date', { ascending: true })
 
   const rows = events ?? []
 
-  // Lo anunciado va aparte de lo que ya se puede jugar. La wiki lista las dos
-  // cosas en la misma tabla y sin separarlas la cabecera contaba como activos
-  // eventos que aún no han llegado.
-  const activeEvents = rows.filter(
+  const activeBanners = rows.filter(
     (e) => phaseAt(e.start_date, e.end_date, now) === 'live'
   )
-  const upcomingEvents = rows
+  const upcomingBanners = rows
     .filter((e) => phaseAt(e.start_date, e.end_date, now) === 'upcoming')
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
 
@@ -103,21 +88,21 @@ export default async function GamePage({ params }: Props) {
       <PageHeader
         title={game.name}
         accentColor={game.color_accent}
-        meta={`${activeEvents.length} ${
-          activeEvents.length === 1 ? t.game.activeOne : t.game.activeMany
+        meta={`${activeBanners.length} ${
+          activeBanners.length === 1 ? t.game.activeOne : t.game.activeMany
         }`}
       />
 
-      <SubNav slug={game.slug} active="events" labels={t.game} />
+      <SubNav slug={game.slug} active="banners" labels={t.game} />
 
       <div className="space-y-9">
         <section>
-          <h2 className="eyebrow mb-3">{t.game.eventsHeading}</h2>
-          {activeEvents.length === 0 ? (
-            <p className="text-sm text-dim">{t.game.noEvents}</p>
+          <h2 className="eyebrow mb-3">{t.game.bannersTitle}</h2>
+          {activeBanners.length === 0 ? (
+            <p className="text-sm text-dim">{t.game.noBanners}</p>
           ) : (
             <div>
-              {activeEvents.map((event) => (
+              {activeBanners.map((event) => (
                 <EventRow
                   key={event.id}
                   event={event}
@@ -131,14 +116,14 @@ export default async function GamePage({ params }: Props) {
           )}
         </section>
 
-        {upcomingEvents.length > 0 && (
+        {upcomingBanners.length > 0 && (
           <section>
             <h2 className="eyebrow mb-3">{t.game.upcomingHeading}</h2>
             <p className="-mt-1 mb-3 text-xs text-[var(--text-faint)]">
               {t.game.upcomingNote}
             </p>
             <div>
-              {upcomingEvents.map((event) => (
+              {upcomingBanners.map((event) => (
                 <EventRow
                   key={event.id}
                   event={event}
@@ -152,14 +137,6 @@ export default async function GamePage({ params }: Props) {
             </div>
           </section>
         )}
-
-        <ChecklistSection
-          items={checklistItems ?? []}
-          gameSlug={game.slug}
-          accentColor={game.color_accent}
-          locale={locale}
-          labels={t.game}
-        />
       </div>
     </main>
   )

@@ -81,6 +81,12 @@ export const es = {
       story: 'historia',
       achievement: 'reto',
     },
+    // SubNav de segmento dentro del juego (eventos | banners)
+    eventsTab: 'Eventos',
+    bannersTab: 'Banners',
+    bannersTitle: 'Banners',
+    bannersNote: 'Banners de gacha actuales y próximos.',
+    noBanners: 'No hay banners activos ahora mismo.',
   },
 
   // Juegos en pausa (game-status.ts): placeholder con identidad del juego.

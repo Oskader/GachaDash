@@ -1,4 +1,10 @@
-﻿export type Json =
+﻿/**
+ * OVERRIDE TEMPORAL (2026-09-05): `event_kind` y `events.kind` se han añadido
+ * a mano porque la DDL de docs/migrations/2026-09-04-add-event-kind.md aún no
+ * está aplicada y `supabase gen types` exige que exista. Regenerar en cuanto
+ * se aplique; el override desaparece solo.
+ */
+export type Json =
   | string
   | number
   | boolean
@@ -72,6 +78,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          kind: Database["public"]["Enums"]["event_kind"] | null
           rewards: Json | null
           source_url: string | null
           start_date: string
@@ -88,6 +95,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          kind?: Database["public"]["Enums"]["event_kind"] | null
           rewards?: Json | null
           source_url?: string | null
           start_date: string
@@ -104,6 +112,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          kind?: Database["public"]["Enums"]["event_kind"] | null
           rewards?: Json | null
           source_url?: string | null
           start_date?: string
@@ -220,6 +229,11 @@ export type Database = {
         | "artifact"
         | "story"
         | "achievement"
+        | "other"
+      event_kind:
+        | "banner"
+        | "mission"
+        | "login_event"
         | "other"
       game_slug:
         | "honkai-star-rail"

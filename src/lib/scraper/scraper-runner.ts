@@ -8,6 +8,7 @@ import { fetchDescriptions } from './descriptions'
 import { translateToSpanish } from './translate'
 import { SOURCES } from './sources'
 import { isPausedGame } from '@/lib/game-status'
+import { classifyEvent } from './classify'
 
 export interface ScrapeResult {
   success: boolean
@@ -229,6 +230,12 @@ export async function runScraperForGame(
     const start_date = extra?.start_date ?? event.start_date
     const end_date = extra?.end_date ?? event.end_date
 
+    // Clasificación del evento (banner / mission / login_event / other).
+    // Se hace DESPUÉS del merge con HoYo porque la fecha definitiva se decide
+    // en las dos líneas de arriba: clasificar con fechas de wiki que luego
+    // cambian daría clasificaciones inconsistentes entre pasadas.
+    const kind = classifyEvent({ title: event.title, start_date, end_date }, gameSlug)
+
     // `is_active` es "¿sigue vivo?", no "¿lo lista la fuente?". Marcarlo
     // siempre true dejaba activos en la base de datos eventos terminados hace
     // semanas, porque la reconciliación solo mira lo que la fuente deja de
@@ -247,6 +254,7 @@ export async function runScraperForGame(
       source_url: source.humanUrl,
       image_url,
       is_active: live,
+      kind,
     }
   })
 

@@ -79,6 +79,12 @@ export const en: Dictionary = {
       story: 'story',
       achievement: 'challenge',
     },
+    // In-game segment sub-nav (events | banners)
+    eventsTab: 'Events',
+    bannersTab: 'Banners',
+    bannersTitle: 'Banners',
+    bannersNote: 'Current and upcoming gacha banners.',
+    noBanners: 'No active banners right now.',
   },
 
   // Games on pause (game-status.ts): placeholder with the game's identity.
