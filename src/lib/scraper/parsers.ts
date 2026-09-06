@@ -206,6 +206,117 @@ export function parseFandomTables(html: string): ParsedEvent[] {
  * endfield.wiki.gg no usa tabla: renderiza tarjetas `.mp-event` con el nombre
  * entre corchetes y una línea de horario por región.
  */
+/**
+ * Warp/List de HSR (Fandom): banners de gacha con rates-up.
+ *
+ * Estructura (sección "Event Warps" con sub-secciones Current/Upcoming):
+ *
+ *   <h4>Current</h4>
+ *   <table>
+ *     <tr><th>Type</th><th>Warps</th></tr>
+ *     <tr><th colspan="2">Version 4.5: August 26, 2026 — September 12, 2026</th></tr>
+ *     <tr>
+ *       <td>Character Event</td>
+ *       <td>
+ *         <div class="warp-banners">
+ *           <div>
+ *             <span typeof="mw:File"><a href="..."><img .../></a></span>
+ *             <a href="...">Summer Chorus</a>
+ *           </div>
+ *         </div>
+ *       </td>
+ *     </tr>
+ *   </table>
+ *
+ * Los banners de Light Cone comparten ventana con los de personaje, así
+ * que solo lee los "Character Event" y "Light Cone Event" de Current/Upcoming.
+ * La fecha es la del header de versión (compartida por todos los banners
+ * de esa fila).
+ */
+export function parseHsrWarps(html: string, section: string, host: string): ParsedEvent[] {
+  const $ = cheerio.load(html)
+  const out: ParsedEvent[] = []
+
+  // Solo las secciones Current y Upcoming interesan.
+  if (!/^(current|upcoming)$/i.test(section)) return out
+
+  // Buscar el heading de la sección y la tabla que le sigue.
+  const heading = $(`h3, h4, h5`).filter((_i, el) => {
+    return /^(current|upcoming)$/i.test($(el).text().trim())
+  }).first()
+
+  if (!heading.length) return out
+
+  // La primera tabla tras el heading contiene los banners.
+  const table = heading.nextAll('table').first()
+  if (!table.length) return out
+
+  let currentDates: { start_date: string; end_date: string } | null = null
+
+  table.find('tr').each((_i, row) => {
+    const cells = $(row).find('th, td')
+    if (cells.length === 0) return
+
+    // Header de versión con fechas: <th>Version X.Y: fecha — fecha</th>
+    if (cells.length === 1) {
+      const headerText = $(cells[0]).text()
+      const dateMatch = headerText.match(/(\w+ \d{1,2}, \d{4})\s*[—–-]\s*(\w+ \d{1,2}, \d{4})/)
+      if (dateMatch) {
+        const start = new Date(dateMatch[1] + ' UTC')
+        const end = new Date(dateMatch[2] + ' 23:59:59 UTC')
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+          currentDates = {
+            start_date: start.toISOString(),
+            end_date: end.toISOString(),
+          }
+        }
+      }
+      return
+    }
+
+    // Fila con tipo + banners
+    if (cells.length < 2 || !currentDates) return
+
+    const type = $(cells[0]).text().toLowerCase()
+    // Solo Character Event y Light Cone Event.
+    if (!/character|light cone/.test(type)) return
+
+    const bannersCell = $(cells[1])
+    bannersCell.find('.warp-banners div').each((_j, bannerDiv) => {
+      // El link con el texto es el segundo <a> (el primero es el de la imagen).
+      const links = $(bannerDiv).find('a')
+      const link = links.filter((_i, a) => {
+        const href = $(a).attr('href') ?? ''
+        return href.startsWith('/wiki/') && !href.includes(':') && $(a).text().trim()
+      }).first()
+
+      const title = cleanTitle(link.text())
+      if (!title) return
+
+      const img = $(bannerDiv).find('img').first()
+      const src = img.attr('data-src') ?? img.attr('src')
+      if (!src || src.startsWith('data:')) return
+
+      // Saltar Light Cone banners (no interesan para /banners).
+      if (/light cone/i.test(type)) return
+
+      out.push({
+        title,
+        ...currentDates,
+        section,
+        pageTitle: link.attr('title') || undefined,
+        image_url: absoluteImageUrl(src, host),
+      })
+    })
+  })
+
+  return out
+}
+
+/**
+ * endfield.wiki.gg no usa tabla: renderiza tarjetas `.mp-event` con el nombre
+ * entre corchetes y una línea de horario por región.
+ */
 export function parseEndfieldCards(
   html: string,
   section: string,

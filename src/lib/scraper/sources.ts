@@ -17,7 +17,7 @@
  * sin LLM de por medio.
  */
 
-export type ParserKind = 'fandom-table' | 'endfield-cards'
+export type ParserKind = 'fandom-table' | 'endfield-cards' | 'hsr-warps'
 
 export interface GameSource {
   gameSlug: string
@@ -37,6 +37,12 @@ export interface GameSource {
   humanUrl: string
   /** Host de la wiki, para ir a buscar la descripción a la página del evento. */
   wikiHost: string
+  /**
+   * Fuente adicional para banners de gacha (solo HSR). La wiki de Fandom
+   * lista los eventos en una tabla y los banners de gacha en otra distinta
+   * (Warp/List). Sin esto, los banners de rates-up no aparecen en /banners.
+   */
+  bannersUrl?: string
 }
 
 export const SOURCES: Record<string, GameSource> = {
@@ -49,6 +55,9 @@ export const SOURCES: Record<string, GameSource> = {
       'https://honkai-star-rail.fandom.com/api.php?action=parse&page=Events&format=json',
     humanUrl: 'https://honkai-star-rail.fandom.com/wiki/Events',
     wikiHost: 'honkai-star-rail.fandom.com',
+    // Banners de gacha (rates-up de personajes). Están en Warp/List, no en Events.
+    bannersUrl:
+      'https://honkai-star-rail.fandom.com/api.php?action=parse&page=Warp/List&format=json',
   },
 
   'zenless-zone-zero': {

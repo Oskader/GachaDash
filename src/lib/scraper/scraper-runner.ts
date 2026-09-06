@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import { fetchMediaWiki, fetchSectionIndex } from './browser'
-import { parseEndfieldCards, parseFandomTables, type ParsedEvent } from './parsers'
+import { parseEndfieldCards, parseFandomTables, parseHsrWarps, type ParsedEvent } from './parsers'
 import { dedupeByTitle, dedupKey } from './normalize'
 import { fetchHoyoEnrichment } from './hoyo-announcements'
 import { fetchDescriptions } from './descriptions'
@@ -60,6 +60,20 @@ async function collectEvents(gameSlug: string): Promise<ParsedEvent[]> {
       collected.push(...parseEndfieldCards(html, label, source.wikiHost))
     }
     return collected
+  }
+
+  // HSR tiene banners de gacha en Warp/List (aparte de eventos en Events).
+  if (source.parser === 'fandom-table' && source.bannersUrl) {
+    const [eventsHtml, bannersHtml] = await Promise.all([
+      fetchMediaWiki(source.sourceUrl),
+      fetchMediaWiki(source.bannersUrl),
+    ])
+    const events = parseFandomTables(eventsHtml.html)
+    const banners = [
+      ...parseHsrWarps(bannersHtml.html, 'current', source.wikiHost),
+      ...parseHsrWarps(bannersHtml.html, 'upcoming', source.wikiHost),
+    ]
+    return [...events, ...banners]
   }
 
   const { html } = await fetchMediaWiki(source.sourceUrl)
