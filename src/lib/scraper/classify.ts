@@ -71,7 +71,7 @@ const LOGIN_EVENT_RE = /\b(?:fund|anniversary|login|check.?in|gift|endgame)\b/i
 // Rutina repetible con nombre propio: nunca banner aunque la ventana sea
 // corta ("Shiyu Defense", "Combat Training").
 const NON_BANNER_RE =
-  /\b(?:defense|training|fund|anniversary|endgame|login|gift)\b/i
+  /\b(?:defense|training|fund|anniversary|endgame|login|gift|cyclical)\b/i
 
 /** Duración en días fraccionarios; NaN si alguna fecha no se interpreta. */
 function durationDays(start_date: string, end_date: string): number {

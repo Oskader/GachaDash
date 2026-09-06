@@ -300,6 +300,11 @@ export function parseHsrWarps(html: string, section: string, host: string): Pars
       // Saltar Light Cone banners (no interesan para /banners).
       if (/light cone/i.test(type)) return
 
+      // Saltar banners de colaboración Fate (permanentes/semi-permanentes).
+      // Estos no son banners de gacha rotativos: Saber, Archer, Rin, Gilgamesh,
+      // Excalibur, Enuma Elish... son una colaboración indefinida.
+      if (/fate|saber|archer|rin|gilgamesh|excalibur|enuma elish|gem coursing|bone of my sword/i.test(title)) return
+
       out.push({
         title,
         ...currentDates,
