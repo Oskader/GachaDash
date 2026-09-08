@@ -109,7 +109,7 @@ export default async function CiclicosPage() {
   return (
     <main className="mx-auto max-w-lg px-4 pb-24">
       {/* Sin stripe de acento: la identidad de esta página es el ciclo de la
-          semana, que ya dibuja la mecha del tablero. */}
+          semana, que anuncia la cabecera de Semanales. */}
       <PageHeader
         title={t.ciclicos.title}
         meta={`${weeklyEvents.length} ${t.ciclicos.events}`}

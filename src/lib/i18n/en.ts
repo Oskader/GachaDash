@@ -69,6 +69,7 @@ export const en: Dictionary = {
     selectAll: 'All',
     close: 'Close',
     renewsIn: 'Renews in',
+    weeklyHeading: 'Weeklies',
     progressAria: 'Weekly events completed this week',
     emptyTitle: "You don't follow any games",
     emptyBody: 'Add the games you play to see their weeklies and endgame here.',

@@ -38,57 +38,46 @@ interface Props {
 }
 
 /**
- * La mecha de la SEMANA: la única mecha de la página.
+ * Barra superior del tablero: solo aloja el control "Añadir juegos".
+ * Antes llevaba la mecha de la semana; el plazo del ciclo vive ahora en la
+ * cabecera de Semanales, junto a lo que mide.
+ */
+function BoardToolbar({ children }: { children: ReactNode }) {
+  return <div className="mb-6 flex justify-end">{children}</div>
+}
+
+/**
+ * Cabecera de Semanales con la cuenta al renuevo incrustada:
+ * "SEMANALES · Se renueva en 2d 14h".
  *
  * Un evento semanal no se acaba cuando termina su ventana en la wiki, se
- * RENUEVA: lo que caduca de verdad cada semana es el propio ciclo. La mecha
- * firmante mide de lunes 04:00 a lunes 04:00 (ver `weeklyWindowAt`) y a su
- * lado van la cuenta atrás al renuevo y el control "Añadir juegos". Un
- * evento concreto puede durar un parche; la semana no.
+ * RENUEVA: lo que caduca de verdad cada semana es el propio ciclo, de
+ * lunes 04:00 a lunes 04:00 (ver `weeklyWindowAt`). La cuenta lleva color
+ * de urgencia como todas las demás.
  */
-function WeekMeter({
-  labels,
-  children,
-}: {
-  labels: Dictionary['ciclicos']
-  children: ReactNode
-}) {
+function WeeklyRenewalHeading({ labels }: { labels: Dictionary['ciclicos'] }) {
   const now = useClock()
   const week = now === 0 ? null : weeklyWindowAt(now)
   const level = week ? levelFor(week.end - now) : 'none'
 
   return (
-    <div className="mb-6">
-      <div className="fuse" role="presentation">
-        {week && (
-          <div
-            className="fuse-burn"
-            style={{
-              width: `${((now - week.start) / (week.end - week.start)) * 100}%`,
-              backgroundColor: urgencyColor(level),
-            }}
-          />
-        )}
-      </div>
-
-      <div className="mt-2.5 flex items-center justify-between gap-4">
-        {week ? (
-          <span
-            className="tabular shrink-0 text-sm font-medium"
-            style={{ color: urgencyColor(level) }}
-          >
-            {labels.renewsIn} {formatRemaining(week.end - now)}
-          </span>
-        ) : (
-          // Reserva el hueco con las mismas métricas: sin salto de layout al
-          // llegar la hora real, igual que hace CountdownLabel.
-          <span className="tabular shrink-0 text-sm text-transparent" aria-hidden="true">
-            00d 00h
-          </span>
-        )}
-        {children}
-      </div>
-    </div>
+    <h2 className="eyebrow mb-3">
+      {labels.weeklyHeading}
+      {week ? (
+        <span
+          className="tabular shrink-0 normal-case tracking-normal"
+          style={{ color: urgencyColor(level) }}
+        >
+          · {labels.renewsIn} {formatRemaining(week.end - now)}
+        </span>
+      ) : (
+        // Reserva el hueco con las mismas métricas: sin salto de layout al
+        // llegar la hora real, igual que hace CountdownLabel.
+        <span className="tabular shrink-0 text-transparent" aria-hidden="true">
+          · {labels.renewsIn} 00d 00h
+        </span>
+      )}
+    </h2>
   )
 }
 
@@ -135,7 +124,7 @@ export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, wo
 
   return (
     <>
-      <WeekMeter labels={labels}>
+      <BoardToolbar>
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
@@ -150,7 +139,7 @@ export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, wo
             {selected.length}/{games.length}
           </span>
         </button>
-      </WeekMeter>
+      </BoardToolbar>
 
       {isExplicitlyEmpty ? (
         <div className="border border-line bg-panel px-4 py-10 text-center">
@@ -170,6 +159,7 @@ export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, wo
       ) : (
         <>
           <div className="space-y-8">
+            <WeeklyRenewalHeading labels={labels} />
             {visibleWeekly.map((section) => (
               <WeeklySection
                 key={section.slug}
