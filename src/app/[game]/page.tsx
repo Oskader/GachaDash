@@ -3,9 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { EventRow } from '@/components/event-row'
-import { ChecklistSection } from './components/ChecklistSection'
 import { SubNav } from './components/SubNav'
-import { WeeklySection } from './components/WeeklySection'
 import { getI18n } from '@/lib/i18n'
 import { isPausedGame } from '@/lib/game-status'
 import { phaseAt, requestNow } from '@/lib/urgency'
@@ -71,25 +69,19 @@ export default async function GamePage({ params }: Props) {
     )
   }
 
-  const [{ data: events }, { data: checklistItems }] = await Promise.all([
-    supabase
-      .from('events')
-      .select('*')
-      .eq('game_id', game.id)
-      .eq('is_active', true)
-      .gte('end_date', new Date(now).toISOString())
-      .order('end_date', { ascending: true })
-      .limit(20),
-    supabase
-      .from('checklist_items')
-      .select('*')
-      .eq('game_id', game.id)
-      .order('sort_order'),
-  ])
+  const { data: events } = await supabase
+    .from('events')
+    .select('*')
+    .eq('game_id', game.id)
+    .eq('is_active', true)
+    .gte('end_date', new Date(now).toISOString())
+    .order('end_date', { ascending: true })
+    .limit(20)
 
   const rows = events ?? []
 
-  // Excluir eventos semanales (van en su propia sección con checklist).
+  // Los semanales no se listan aquí: son contenido de /ciclicos desde el
+  // 2026-09-08 (checklist de semanales y de endgame viven allí).
   const eventRows = rows.filter((e) => e.kind !== 'weekly')
 
   // Lo anunciado va aparte de lo que ya se puede jugar. La wiki lista las dos
@@ -101,7 +93,6 @@ export default async function GamePage({ params }: Props) {
   const upcomingEvents = eventRows
     .filter((e) => phaseAt(e.start_date, e.end_date, now) === 'upcoming')
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
-  const weeklyEvents = rows.filter((e) => e.kind === 'weekly')
 
   return (
     <main className="mx-auto max-w-lg px-4 pb-10">
@@ -158,16 +149,7 @@ export default async function GamePage({ params }: Props) {
           </section>
         )}
 
-        {/* Eventos semanales repetitivos con checklist local (Cyclical Extrapolation, etc.) */}
-        <WeeklySection items={weeklyEvents} accentColor={game.color_accent} locale={t.game} />
-
-        <ChecklistSection
-          items={checklistItems ?? []}
-          gameSlug={game.slug}
-          accentColor={game.color_accent}
-          locale={locale}
-          labels={t.game}
-        />
+        {/* Semanales y endgame ahora viven en /ciclicos. */}
       </div>
     </main>
   )

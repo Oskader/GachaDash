@@ -88,7 +88,6 @@ export const es = {
     bannersTitle: 'Banners',
     bannersNote: 'Banners de gacha actuales y próximos.',
     noBanners: 'No hay banners activos ahora mismo.',
-    weeklyHeading: 'Semanal',
   },
 
   ciclicos: {
