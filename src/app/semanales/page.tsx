@@ -62,11 +62,7 @@ export default async function SemanalesPage() {
 
       {/* Filtro por juego */}
       <div className="mb-6">
-        <GameFilter
-          games={games}
-          selected={new Set(games.map((g) => g.slug))}
-          onChange={() => {}}
-        />
+        <GameFilter games={games} />
       </div>
 
       {/* Eventos semanales agrupados por juego */}

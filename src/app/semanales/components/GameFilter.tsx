@@ -11,12 +11,11 @@ interface Game {
 
 interface GameFilterProps {
   games: Game[]
-  selected: Set<string>
-  onChange: (selected: Set<string>) => void
 }
 
-export function GameFilter({ games, selected, onChange }: GameFilterProps) {
+export function GameFilter({ games }: GameFilterProps) {
   const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(games.map((g) => g.slug)))
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,13 +29,15 @@ export function GameFilter({ games, selected, onChange }: GameFilterProps) {
   }, [])
 
   const toggle = (slug: string) => {
-    const next = new Set(selected)
-    if (next.has(slug)) {
-      next.delete(slug)
-    } else {
-      next.add(slug)
-    }
-    onChange(next)
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) {
+        next.delete(slug)
+      } else {
+        next.add(slug)
+      }
+      return next
+    })
   }
 
   const selectedCount = selected.size
