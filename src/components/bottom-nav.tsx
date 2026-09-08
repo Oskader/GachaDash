@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarClock, LayoutGrid, Settings, User } from 'lucide-react'
+import { CalendarClock, LayoutGrid, RefreshCw, Settings, User } from 'lucide-react'
 
 /** Rutas donde la barra estorba en vez de ayudar. */
-const HIDDEN_ON = ['/login', '/register', '/']
+const HIDDEN_ON = ['/login', '/register', '/', '/semanales']
 
 interface Props {
   /**
@@ -16,6 +16,7 @@ interface Props {
   labels: {
     hoy: string
     juegos: string
+    semanales: string
     cuenta: string
     ajustes: string
     aria: string
@@ -30,6 +31,7 @@ export function BottomNav({ labels }: Props) {
   const items = [
     { href: '/hoy', label: labels.hoy, icon: CalendarClock },
     { href: '/juegos', label: labels.juegos, icon: LayoutGrid },
+    { href: '/semanales', label: labels.semanales, icon: RefreshCw },
     { href: '/cuenta', label: labels.cuenta, icon: User },
     { href: '/ajustes', label: labels.ajustes, icon: Settings },
   ]

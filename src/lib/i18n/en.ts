@@ -6,11 +6,12 @@ import type { Dictionary } from './es'
  */
 export const en: Dictionary = {
   nav: {
-    hoy: 'Today',
-    juegos: 'Games',
-    cuenta: 'Account',
-    ajustes: 'Settings',
-    aria: 'Main navigation',
+    hoy: 'Hoy',
+    juegos: 'Juegos',
+    semanales: 'Semanales',
+    cuenta: 'Cuenta',
+    ajustes: 'Ajustes',
+    aria: 'Navegación principal',
   },
 
   landing: {

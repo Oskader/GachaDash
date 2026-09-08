@@ -11,6 +11,7 @@ export const es = {
   nav: {
     hoy: 'Hoy',
     juegos: 'Juegos',
+    semanales: 'Semanales',
     cuenta: 'Cuenta',
     ajustes: 'Ajustes',
     aria: 'Navegación principal',
