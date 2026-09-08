@@ -20,7 +20,10 @@ export default async function JuegosPage() {
       .order('name'),
     supabase
       .from('events')
-      .select('game_id, start_date, end_date')
+      // `kind` tiene que venir en el payload: el filtro de semanales de abajo
+      // compara en memoria, y si la columna no se pide el filtro es un no-op
+      // silencioso.
+      .select('game_id, kind, start_date, end_date')
       .eq('is_active', true)
       .gte('end_date', new Date(now).toISOString()),
   ])
@@ -42,6 +45,9 @@ export default async function JuegosPage() {
   )
   for (const event of events ?? []) {
     if (pausedIds.has(event.game_id)) continue
+    // Los semanales se cuentan en /ciclicos; aquí inflarían el número de
+    // eventos activos con uno que se repite cada semana.
+    if (event.kind === 'weekly') continue
     const entry =
       summary.get(event.game_id) ?? { count: 0, upcoming: 0, soonest: null }
 

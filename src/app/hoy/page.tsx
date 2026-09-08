@@ -44,7 +44,13 @@ export default async function HoyPage() {
 
   const { data } = await query.returns<EventWithGame[]>()
 
-  const rows = (data ?? []).filter((e) => !isPausedGame(e.games?.slug ?? ''))
+  // Los semanales (Cyclical Extrapolation y compañía) viven en /ciclicos, no
+  // aquí: su fecha de fin es ruido en una pantalla de "¿qué se me escapa?".
+  // En memoria, no con .neq('kind', 'weekly'): las filas con kind NULL se
+  // caerían del resultado de PostgREST y desaparecerían sin error.
+  const rows = (data ?? []).filter(
+    (e) => !isPausedGame(e.games?.slug ?? '') && e.kind !== 'weekly'
+  )
 
   // Primer corte: lo que ya está en marcha contra lo que solo está anunciado.
   // Las wikis listan las dos cosas y mezclarlas confunde de dos maneras — un
