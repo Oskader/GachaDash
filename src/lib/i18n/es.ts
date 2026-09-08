@@ -103,7 +103,6 @@ export const es = {
     selectAll: 'Todos',
     close: 'Cerrar',
     renewsIn: 'Se renueva en',
-    startsIn: 'Empieza en',
     progressAria: 'Eventos semanales completados esta semana',
     emptyTitle: 'No sigues ningún juego',
     emptyBody: 'Añade los juegos que juegas para ver aquí sus semanales y su endgame.',

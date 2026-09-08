@@ -24,6 +24,12 @@ interface Props {
   locale: Locale
   labels: Dictionary['game']
   isSignedIn: boolean
+  /**
+   * En la vista agregada (/ciclicos) la cabecera nombra al JUEGO con su
+   * stripe —"Endgame" ya lo dice el eyebrow de la sección—. Sin esta prop,
+   * la página del juego ve su cabecera de siempre.
+   */
+  gameName?: string
 }
 
 export function ChecklistClient({
@@ -34,6 +40,7 @@ export function ChecklistClient({
   isSignedIn,
   locale,
   labels,
+  gameName,
 }: Props) {
   const [, startTransition] = useTransition()
 
@@ -69,7 +76,18 @@ export function ChecklistClient({
     <section aria-labelledby="checklist-heading">
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <h2 id="checklist-heading" className="eyebrow flex-1">
-          {labels.checklistHeading}
+          {gameName ? (
+            <>
+              <span
+                className="h-2.5 w-[3px] shrink-0"
+                style={{ backgroundColor: accentColor }}
+                aria-hidden="true"
+              />
+              {gameName}
+            </>
+          ) : (
+            labels.checklistHeading
+          )}
         </h2>
         <span className="tabular text-sm text-dim">
           <span style={{ color: done > 0 ? accentColor : undefined }}>{done}</span>

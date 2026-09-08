@@ -12,12 +12,21 @@ export async function ChecklistSection({
   accentColor,
   locale,
   labels,
+  gameName,
+  showSignIn = true,
 }: {
   items: ChecklistItemRow[]
   gameSlug: string
   accentColor: string
   locale: Locale
   labels: Dictionary['game']
+  /** Pinta el nombre del juego en la cabecera del checklist. */
+  gameName?: string
+  /**
+   * En la vista agregada el aviso de sesión se pinta UNA vez al final de la
+   * página, no uno por juego — cuatro paneles idénticos son ruido.
+   */
+  showSignIn?: boolean
 }) {
   const supabase = await createClient()
 
@@ -63,9 +72,10 @@ export async function ChecklistSection({
         isSignedIn={Boolean(user)}
         locale={locale}
         labels={labels}
+        gameName={gameName}
       />
 
-      {!user && (
+      {showSignIn && !user && (
         <p className="mt-4 border border-line bg-panel px-4 py-3 text-sm text-dim">
           <Link
             href={`/login?next=/${gameSlug}`}
