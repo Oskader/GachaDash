@@ -2,20 +2,30 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { getI18n } from '@/lib/i18n'
-import { WeeklySection } from './components/WeeklySection'
-import { GameFilter } from './components/GameFilter'
+import { CiclicosBoard } from './components/CiclicosBoard'
 import { ChecklistSection } from '../[game]/components/ChecklistSection'
 import type { Database } from '@/lib/supabase/types'
 
 type GameRow = Database['public']['Tables']['games']['Row']
 type ChecklistItemRow = Database['public']['Tables']['checklist_items']['Row']
 
-export const metadata: Metadata = {
-  title: 'Semanales',
-  description: 'Eventos semanales repetitivos con checklist.',
+interface WeeklyEvent {
+  id: string
+  title: string
+  kind: string | null
+  is_active: boolean
+  image_url: string | null
+  start_date: string
+  end_date: string
+  games: { slug: string; name: string; color_accent: string } | null
 }
 
-export default async function SemanalesPage() {
+export const metadata: Metadata = {
+  title: 'Cíclicos',
+  description: 'Rutinas que se repiten: semanales y endgame del ciclo, con checklist.',
+}
+
+export default async function CiclicosPage() {
   const { locale, t } = await getI18n()
   const supabase = await createClient()
 
@@ -30,21 +40,13 @@ export default async function SemanalesPage() {
     supabase.from('checklist_items').select('*').order('sort_order'),
   ])
 
-  const weeklyEvents = (eventsResult.data ?? []) as any[]
+  const weeklyEvents: any[] = eventsResult.data ?? []
   const games = (gamesResult.data ?? []) as GameRow[]
   const checklistItems = (checklistResult.data ?? []) as ChecklistItemRow[]
 
   // Mapa de game_id -> slug
   const gameIdToSlug = games.reduce<Record<string, string>>((acc, g) => {
     acc[g.id] = g.slug
-    return acc
-  }, {})
-
-  // Agrupar eventos por juego
-  const eventsByGame = weeklyEvents.reduce<Record<string, any[]>>((acc, event) => {
-    const slug = event.games?.slug ?? 'unknown'
-    if (!acc[slug]) acc[slug] = []
-    acc[slug].push(event)
     return acc
   }, {})
 
@@ -58,31 +60,17 @@ export default async function SemanalesPage() {
 
   return (
     <main className="mx-auto max-w-lg px-4 pb-24">
-      <PageHeader title="Semanales" meta={`${weeklyEvents.length} eventos`} accentColor="#F59E0B" />
+      <PageHeader title={t.ciclicos.title} meta={`${weeklyEvents?.length ?? 0} ${t.ciclicos.events}`} accentColor="#F59E0B" />
 
-      {/* Filtro por juego */}
-      <div className="mb-6">
-        <GameFilter games={games} />
-      </div>
-
-      {/* Eventos semanales agrupados por juego */}
-      <div className="space-y-8" id="weekly-content">
-        {games
-          .filter((game) => eventsByGame[game.slug]?.length)
-          .map((game) => (
-            <WeeklySection
-              key={game.slug}
-              events={eventsByGame[game.slug] ?? []}
-              accentColor={game.color_accent}
-              gameName={game.name}
-              locale={t.game}
-            />
-          ))}
-      </div>
+      <CiclicosBoard
+        events={weeklyEvents ?? []}
+        games={games}
+        locale={t.ciclicos}
+      />
 
       {/* Endgames */}
       <div className="mt-12 space-y-8">
-        <h2 className="eyebrow">Endgame</h2>
+        <h2 className="eyebrow">{t.game.checklistHeading}</h2>
         {games
           .filter((game) => checklistByGame[game.slug]?.length)
           .map((game) => (

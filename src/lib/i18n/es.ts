@@ -11,7 +11,7 @@ export const es = {
   nav: {
     hoy: 'Hoy',
     juegos: 'Juegos',
-    semanales: 'Semanales',
+    ciclicos: 'Cíclicos',
     cuenta: 'Cuenta',
     ajustes: 'Ajustes',
     aria: 'Navegación principal',
@@ -89,6 +89,26 @@ export const es = {
     bannersNote: 'Banners de gacha actuales y próximos.',
     noBanners: 'No hay banners activos ahora mismo.',
     weeklyHeading: 'Semanal',
+  },
+
+  ciclicos: {
+    title: 'Cíclicos',
+    metaDescription: 'Rutinas que se repiten: semanales y endgame del ciclo, con checklist.',
+    events: 'eventos',
+    addGames: 'Añadir juegos',
+    gamesAria: 'Filtrar por juego',
+    pickerTitle: 'Elige los juegos',
+    pickerHelp: 'Solo verás semanales y endgame de lo que marques.',
+    pickerDone: 'Ver cíclicos',
+    selectAll: 'Todos',
+    close: 'Cerrar',
+    renewsIn: 'Se renueva en',
+    startsIn: 'Empieza en',
+    progressAria: 'Eventos semanales completados esta semana',
+    emptyTitle: 'No sigues ningún juego',
+    emptyBody: 'Añade los juegos que juegas para ver aquí sus semanales y su endgame.',
+    empty: 'No hay rutinas para los juegos visibles.',
+    endgameHeading: 'Endgame',
   },
 
   // Juegos en pausa (game-status.ts): placeholder con identidad del juego.

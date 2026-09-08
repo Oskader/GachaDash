@@ -16,7 +16,7 @@ interface Props {
   labels: {
     hoy: string
     juegos: string
-    semanales: string
+    ciclicos: string
     cuenta: string
     ajustes: string
     aria: string
@@ -31,7 +31,7 @@ export function BottomNav({ labels }: Props) {
   const items = [
     { href: '/hoy', label: labels.hoy, icon: CalendarClock },
     { href: '/juegos', label: labels.juegos, icon: LayoutGrid },
-    { href: '/semanales', label: labels.semanales, icon: RefreshCw },
+    { href: '/ciclicos', label: labels.ciclicos, icon: RefreshCw },
     { href: '/cuenta', label: labels.cuenta, icon: User },
     { href: '/ajustes', label: labels.ajustes, icon: Settings },
   ]

@@ -224,6 +224,49 @@ export function burnedFraction(
 }
 
 /**
+ * El reinicio semanal de los cuatro juegos: lunes a las 04:00.
+ *
+ * Los servidores de cada juego reinician el lunes de madrugada en SU hora
+ * local; aquí se usa la del visitante como aproximación de la de su
+ * servidor, que para el caso típico (juega en la región de su huso) es
+ * exacta. La página enseña la fecha y hora completas, así que un desfase
+ * sería visible y corregible cambiando estas dos constantes.
+ */
+const RESET_DAY = 1 // lunes (getDay(): 0 domingo … 6 sábado)
+const RESET_HOUR = 4
+
+export interface WeeklyWindow {
+  /**
+   * Identificador estable del periodo: el instante del PRÓXIMO reinicio en
+   * ISO. Dos clientes en la misma semana producen la misma cadena, y cuando
+   * la semana cambia la cadena cambia con ella — es la clave con la que el
+   * checklist sabe que toca vaciarse.
+   */
+  periodId: string
+  /** Inicio del periodo (el reinicio anterior), en ms. */
+  start: number
+  /** El próximo reinicio, en ms. */
+  end: number
+}
+
+/** Ventana semanal vigente en `now` (ms). Determinista, sin efectos. */
+export function weeklyWindowAt(now: number): WeeklyWindow {
+  const end = new Date(now)
+  end.setDate(end.getDate() + ((RESET_DAY - end.getDay() + 7) % 7))
+  end.setHours(RESET_HOUR, 0, 0, 0)
+  // Lunes 04:00 ya pasado el minuto: el próximo reinicio es el de la semana
+  // siguiente, no el que acabó de pasar.
+  if (end.getTime() <= now) end.setDate(end.getDate() + 7)
+
+  const endMs = end.getTime()
+  return {
+    periodId: end.toISOString(),
+    start: endMs - 7 * DAY,
+    end: endMs,
+  }
+}
+
+/**
  * Lectura del reloj para Server Components.
  *
  * En un RSC dinámico esto se evalúa una vez por petición, no en un ciclo de

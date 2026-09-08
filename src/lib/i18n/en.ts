@@ -8,7 +8,7 @@ export const en: Dictionary = {
   nav: {
     hoy: 'Hoy',
     juegos: 'Juegos',
-    semanales: 'Semanales',
+    ciclicos: 'Cycles',
     cuenta: 'Cuenta',
     ajustes: 'Ajustes',
     aria: 'Navegación principal',
@@ -55,6 +55,26 @@ export const en: Dictionary = {
     upcomingCountOne: '{n} coming up',
     upcomingCount: '{n} coming up',
     nextClosing: 'Next closing',
+  },
+
+  ciclicos: {
+    title: 'Cycles',
+    metaDescription: 'Repeating routines: weeklies and the endgame of the cycle, with a checklist.',
+    events: 'events',
+    addGames: 'Add games',
+    gamesAria: 'Filter by game',
+    pickerTitle: 'Choose games',
+    pickerHelp: 'You will only see weeklies and endgame for what you tick.',
+    pickerDone: 'Show cycles',
+    selectAll: 'All',
+    close: 'Close',
+    renewsIn: 'Renews in',
+    startsIn: 'Starts in',
+    progressAria: 'Weekly events completed this week',
+    emptyTitle: "You don't follow any games",
+    emptyBody: 'Add the games you play to see their weeklies and endgame here.',
+    empty: 'No routines for the visible games.',
+    endgameHeading: 'Endgame',
   },
 
   game: {
