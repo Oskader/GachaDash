@@ -124,7 +124,7 @@ export function EventRow({
           </div>
         )}
 
-        {/* min-w-0 para que el line-clamp de la descripción pueda encoger. */}
+        {/* min-w-0 para que el line-clamp-2 del título pueda encoger. */}
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-start justify-between gap-4">
             <h3 className="line-clamp-2 flex-1 text-base font-semibold leading-snug text-foreground">
@@ -137,12 +137,6 @@ export function EventRow({
               words={words}
             />
           </div>
-
-          {description && (
-            <p className="mb-3 line-clamp-1 text-xs leading-relaxed text-dim">
-              {description}
-            </p>
-          )}
 
           {items.length > 0 && (
             <ul className="mb-3 flex flex-wrap gap-x-3 gap-y-1">
@@ -163,6 +157,13 @@ export function EventRow({
           )}
         </div>
       </div>
+
+      {/* La descripción cruza la fila entera, debajo: la columna del título es
+          demasiado estrecha para ella y el line-clamp se comía el final ("…")
+          sin que sobrara espacio debajo. Sin clamp, completa. */}
+      {description && (
+        <p className="mb-3 mt-3 text-xs leading-relaxed text-dim">{description}</p>
+      )}
 
       <Fuse startDate={event.start_date} endDate={event.end_date} />
     </article>

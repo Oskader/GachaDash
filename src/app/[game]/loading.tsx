@@ -24,9 +24,11 @@ export default function Loading() {
                       <Skeleton className="h-5 w-2/3 rounded-none" />
                       <Skeleton className="h-4 w-16 rounded-none" />
                     </div>
-                    <Skeleton className="h-3 w-full rounded-none" />
                   </div>
                 </div>
+                {/* La descripción cruza la fila entera, igual que en
+                    `event-row.tsx`. */}
+                <Skeleton className="h-3 w-full rounded-none" />
                 {/* La mecha va FUERA del flex: cruza la fila entera, igual que
                     en `event-row.tsx`. */}
                 <Skeleton className="h-[3px] w-full rounded-none" />
