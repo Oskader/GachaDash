@@ -49,3 +49,6 @@ next-env.d.ts
 
 # workspace de subagent-driven-development (ledger, briefs, paquetes de review)
 .superpowers/
+
+# Claude Code local settings (personal, not for the repo)
+.claude/settings.local.json
