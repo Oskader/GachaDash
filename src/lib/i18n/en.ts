@@ -85,10 +85,8 @@ export const en: Dictionary = {
     activeOne: 'active',
     activeMany: 'active',
     noEvents: 'No active events right now. The scraper checks the wiki every morning.',
-    checklistEmpty: 'There are no endgame tasks for this game yet.',
     signInLink: 'Sign in',
     signInRest: 'to save your progress across sessions.',
-    checklistHeading: 'Endgame',
     progressAria: 'Endgame progress',
     saveFailed: 'Could not save',
     categories: {

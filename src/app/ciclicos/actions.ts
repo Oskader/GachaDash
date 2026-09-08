@@ -9,7 +9,7 @@ export interface ToggleResult {
 }
 
 /**
- * Marca o desmarca un item del checklist.
+ * Marca o desmarca un item del checklist de endgame de /ciclicos.
  *
  * Esto era una escritura desde el cliente cuyo resultado se descartaba, y
  * cuyo estado optimista revertía al terminar la transición porque nada
@@ -19,8 +19,7 @@ export interface ToggleResult {
  */
 export async function toggleChecklistItem(
   itemId: string,
-  completed: boolean,
-  gameSlug: string
+  completed: boolean
 ): Promise<ToggleResult> {
   const supabase = await createClient()
 
@@ -50,8 +49,7 @@ export async function toggleChecklistItem(
     return { ok: false, error: 'No se pudo guardar el cambio' }
   }
 
-  revalidatePath(`/${gameSlug}`)
-  revalidatePath('/hoy')
+  revalidatePath('/ciclicos')
 
   return { ok: true }
 }

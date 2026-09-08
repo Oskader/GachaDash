@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { getI18n } from '@/lib/i18n'
 import { CiclicosBoard } from './components/CiclicosBoard'
-import { ChecklistSection } from '../[game]/components/ChecklistSection'
+import { ChecklistSection } from './components/ChecklistSection'
 import type { Database } from '@/lib/supabase/types'
 
 type GameRow = Pick<
@@ -85,12 +85,10 @@ export default async function CiclicosPage() {
       node: (
         <ChecklistSection
           items={checklistByGame.get(game.slug) ?? []}
-          gameSlug={game.slug}
           accentColor={game.color_accent}
           locale={locale}
           labels={t.game}
           gameName={game.name}
-          showSignIn={false}
         />
       ),
     }))

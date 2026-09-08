@@ -19,23 +19,17 @@ interface Props {
   items: ChecklistItemRow[]
   /** IDs ya completados, calculados en el servidor. */
   completedIds: string[]
-  gameSlug: string
   accentColor: string
   locale: Locale
   labels: Dictionary['game']
   isSignedIn: boolean
-  /**
-   * En la vista agregada (/ciclicos) la cabecera nombra al JUEGO con su
-   * stripe —"Endgame" ya lo dice el eyebrow de la sección—. Sin esta prop,
-   * la página del juego ve su cabecera de siempre.
-   */
-  gameName?: string
+  /** La cabecera nombra al JUEGO con su stripe: aquí conviven varios. */
+  gameName: string
 }
 
 export function ChecklistClient({
   items,
   completedIds,
-  gameSlug,
   accentColor,
   isSignedIn,
   locale,
@@ -61,7 +55,7 @@ export function ChecklistClient({
 
     startTransition(async () => {
       addOptimistic(itemId)
-      const result = await toggleChecklistItem(itemId, willBeCompleted, gameSlug)
+      const result = await toggleChecklistItem(itemId, willBeCompleted)
       // El error ya no se descarta: si RLS rechaza o cae la red, el usuario
       // se entera y el estado optimista se deshace al revalidar.
       if (!result.ok) toast.error(result.error ?? labels.saveFailed)
@@ -73,21 +67,18 @@ export function ChecklistClient({
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
 
   return (
-    <section aria-labelledby="checklist-heading">
+    <section aria-labelledby={`checklist-heading-${gameName}`}>
       <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 id="checklist-heading" className="eyebrow flex-1">
-          {gameName ? (
-            <>
-              <span
-                className="h-2.5 w-[3px] shrink-0"
-                style={{ backgroundColor: accentColor }}
-                aria-hidden="true"
-              />
-              {gameName}
-            </>
-          ) : (
-            labels.checklistHeading
-          )}
+        <h2
+          id={`checklist-heading-${gameName}`}
+          className="eyebrow flex-1 items-center gap-2"
+        >
+          <span
+            className="h-2.5 w-[3px] shrink-0"
+            style={{ backgroundColor: accentColor }}
+            aria-hidden="true"
+          />
+          {gameName}
         </h2>
         <span className="tabular text-sm text-dim">
           <span style={{ color: done > 0 ? accentColor : undefined }}>{done}</span>

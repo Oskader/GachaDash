@@ -68,10 +68,8 @@ export const es = {
     activeOne: 'activo',
     activeMany: 'activos',
     noEvents: 'No hay eventos activos ahora mismo. El scraper revisa la wiki cada mañana.',
-    checklistEmpty: 'Todavía no hay tareas de endgame para este juego.',
     signInLink: 'Inicia sesión',
     signInRest: 'para guardar tu progreso entre sesiones.',
-    checklistHeading: 'Endgame',
     progressAria: 'Progreso endgame',
     saveFailed: 'No se pudo guardar',
     categories: {
