@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { CalendarClock, LayoutGrid, RefreshCw, Settings, User } from 'lucide-react'
 
 /** Rutas donde la barra estorba en vez de ayudar. */
-const HIDDEN_ON = ['/login', '/register', '/', '/semanales']
+const HIDDEN_ON = ['/login', '/register', '/']
 
 interface Props {
   /**

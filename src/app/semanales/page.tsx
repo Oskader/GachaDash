@@ -3,6 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { getI18n } from '@/lib/i18n'
 import { WeeklySection } from './components/WeeklySection'
+import { GameFilter } from './components/GameFilter'
+import { ChecklistSection } from '../[game]/components/ChecklistSection'
+import type { Database } from '@/lib/supabase/types'
+
+type GameRow = Database['public']['Tables']['games']['Row']
+type ChecklistItemRow = Database['public']['Tables']['checklist_items']['Row']
 
 export const metadata: Metadata = {
   title: 'Semanales',
@@ -10,27 +16,43 @@ export const metadata: Metadata = {
 }
 
 export default async function SemanalesPage() {
-  const { t } = await getI18n()
+  const { locale, t } = await getI18n()
   const supabase = await createClient()
 
-  const [eventsResult, gamesResult] = await Promise.all([
+  const [eventsResult, gamesResult, checklistResult] = await Promise.all([
     supabase
       .from('events')
       .select('id, title, kind, is_active, image_url, start_date, end_date, games(slug, name, color_accent)')
       .eq('is_active', true)
       .eq('kind', 'weekly')
       .order('end_date', { ascending: true }),
-    supabase.from('games').select('slug, name, color_accent').order('name'),
+    supabase.from('games').select('slug, name, color_accent, id').order('name'),
+    supabase.from('checklist_items').select('*').order('sort_order'),
   ])
 
   const weeklyEvents = (eventsResult.data ?? []) as any[]
-  const games = gamesResult.data ?? []
+  const games = (gamesResult.data ?? []) as GameRow[]
+  const checklistItems = (checklistResult.data ?? []) as ChecklistItemRow[]
+
+  // Mapa de game_id -> slug
+  const gameIdToSlug = games.reduce<Record<string, string>>((acc, g) => {
+    acc[g.id] = g.slug
+    return acc
+  }, {})
 
   // Agrupar eventos por juego
-  const eventsByGame = weeklyEvents.reduce((acc: Record<string, any[]>, event: any) => {
+  const eventsByGame = weeklyEvents.reduce<Record<string, any[]>>((acc, event) => {
     const slug = event.games?.slug ?? 'unknown'
     if (!acc[slug]) acc[slug] = []
     acc[slug].push(event)
+    return acc
+  }, {})
+
+  // Agrupar checklist items por juego (usando game_id)
+  const checklistByGame = checklistItems.reduce<Record<string, ChecklistItemRow[]>>((acc, item) => {
+    const slug = gameIdToSlug[item.game_id] ?? 'unknown'
+    if (!acc[slug]) acc[slug] = []
+    acc[slug].push(item)
     return acc
   }, {})
 
@@ -40,38 +62,41 @@ export default async function SemanalesPage() {
 
       {/* Filtro por juego */}
       <div className="mb-6">
-        <p className="eyebrow mb-3">Juegos</p>
-        <div className="flex flex-wrap gap-2" id="game-filter">
-          {games.map((game: any) => (
-            <label
-              key={game.slug}
-              className="flex cursor-pointer items-center gap-2 rounded-sm border border-line bg-panel px-3 py-1.5 transition-colors hover:bg-muted/50"
-            >
-              <input
-                type="checkbox"
-                defaultChecked
-                className="h-4 w-4 shrink-0 accent-[var(--accent)]"
-                style={{ accentColor: game.color_accent } as React.CSSProperties}
-                value={game.slug}
-                id={`filter-${game.slug}`}
-              />
-              <span className="text-sm text-foreground">{game.name}</span>
-            </label>
-          ))}
-        </div>
+        <GameFilter
+          games={games}
+          selected={new Set(games.map((g) => g.slug))}
+          onChange={() => {}}
+        />
       </div>
 
       {/* Eventos semanales agrupados por juego */}
       <div className="space-y-8" id="weekly-content">
         {games
-          .filter((game: any) => eventsByGame[game.slug]?.length)
-          .map((game: any) => (
+          .filter((game) => eventsByGame[game.slug]?.length)
+          .map((game) => (
             <WeeklySection
               key={game.slug}
               events={eventsByGame[game.slug] ?? []}
               accentColor={game.color_accent}
               gameName={game.name}
               locale={t.game}
+            />
+          ))}
+      </div>
+
+      {/* Endgames */}
+      <div className="mt-12 space-y-8">
+        <h2 className="eyebrow">Endgame</h2>
+        {games
+          .filter((game) => checklistByGame[game.slug]?.length)
+          .map((game) => (
+            <ChecklistSection
+              key={game.slug}
+              items={checklistByGame[game.slug] ?? []}
+              gameSlug={game.slug}
+              accentColor={game.color_accent}
+              locale={locale}
+              labels={t.game}
             />
           ))}
       </div>

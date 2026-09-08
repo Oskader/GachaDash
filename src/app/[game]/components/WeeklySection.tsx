@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import type { Database } from '@/lib/supabase/types'
 import type { Dictionary } from '@/lib/i18n'
 
@@ -20,18 +20,7 @@ interface WeeklySectionProps {
 export function WeeklySection({ items, accentColor, locale }: WeeklySectionProps) {
   const [completed, setCompleted] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    const stored = localStorage.getItem('gachaevent-weekly-completed')
-    if (stored) {
-      try {
-        setCompleted(new Set(JSON.parse(stored)))
-      } catch {
-        // ignore
-      }
-    }
-  }, [])
-
-  const toggle = (id: string) => {
+  const toggle = useCallback((id: string) => {
     setCompleted((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -42,7 +31,7 @@ export function WeeklySection({ items, accentColor, locale }: WeeklySectionProps
       localStorage.setItem('gachaevent-weekly-completed', JSON.stringify([...next]))
       return next
     })
-  }
+  }, [])
 
   if (items.length === 0) return null
 

@@ -1,44 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
+import { useClock } from '@/lib/use-clock'
+import { timelineAt, urgencyColor } from '@/lib/urgency'
 import type { Dictionary } from '@/lib/i18n'
 
-interface WeeklyEvent {
-  id: string
-  title: string
-  is_active: boolean
-  image_url: string | null
-  start_date: string
-  end_date: string
-}
-
 interface WeeklySectionProps {
-  events: WeeklyEvent[]
+  events: any[]
   accentColor: string
   gameName: string
   locale: Dictionary['game']
 }
 
 /**
- * Sección "Semanal" con checklist local para eventos repetitivos
- * (Cyclical Extrapolation, etc.). El estado se persiste en localStorage
- * y es por-dispositivo (no requiere login, como el endgame).
+ * Sección "Semanal" con checklist local para eventos repetitivos.
+ * El estado se persiste en localStorage y se resetea cuando el evento termina.
+ * Muestra un temporizador de cuenta atras hasta el proximo reset.
  */
-export function WeeklySection({ events, accentColor, gameName, locale }: WeeklySectionProps) {
+export function WeeklySection({ events, accentColor, gameName }: WeeklySectionProps) {
+  const now = useClock()
   const [completed, setCompleted] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    const stored = localStorage.getItem('gachaevent-weekly-completed')
-    if (stored) {
-      try {
-        setCompleted(new Set(JSON.parse(stored)))
-      } catch {
-        // ignore
-      }
-    }
-  }, [])
-
-  const toggle = (id: string) => {
+  const toggle = useCallback((id: string) => {
     setCompleted((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -49,7 +32,7 @@ export function WeeklySection({ events, accentColor, gameName, locale }: WeeklyS
       localStorage.setItem('gachaevent-weekly-completed', JSON.stringify([...next]))
       return next
     })
-  }
+  }, [])
 
   if (events.length === 0) return null
 
@@ -60,8 +43,13 @@ export function WeeklySection({ events, accentColor, gameName, locale }: WeeklyS
         <h2 className="eyebrow">{gameName}</h2>
       </div>
       <div className="space-y-2">
-        {events.map((item) => {
+        {events.map((item: any) => {
           const isCompleted = completed.has(item.id)
+          const cd = now === 0 ? null : timelineAt(item.start_date, item.end_date, now)
+          const isLive = cd?.phase === 'live'
+          const isUpcoming = cd?.phase === 'upcoming'
+          const isEnded = cd?.level === 'ended'
+
           return (
             <label
               key={item.id}
@@ -74,13 +62,23 @@ export function WeeklySection({ events, accentColor, gameName, locale }: WeeklyS
                 className="h-4 w-4 shrink-0 accent-[var(--accent)]"
                 style={{ accentColor: accentColor } as React.CSSProperties}
               />
-              <span
-                className={`flex-1 text-sm ${
-                  isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'
-                }`}
-              >
-                {item.title}
-              </span>
+              <div className="min-w-0 flex-1">
+                <span
+                  className={`block text-sm ${
+                    isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'
+                  }`}
+                >
+                  {item.title}
+                </span>
+                {cd && !isEnded && (
+                  <span
+                    className="mt-0.5 block text-xs tabular"
+                    style={{ color: urgencyColor(cd.level) }}
+                  >
+                    {isLive ? `Se renueva en ${cd.label}` : isUpcoming ? `Empieza en ${cd.label}` : cd.label}
+                  </span>
+                )}
+              </div>
             </label>
           )
         })}
