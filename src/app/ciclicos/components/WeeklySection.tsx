@@ -1,9 +1,6 @@
 'use client'
 
-import { CountdownLabel } from '@/components/ui/countdown'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClock } from '@/lib/use-clock'
-import { weeklyWindowAt } from '@/lib/urgency'
 import type { Dictionary } from '@/lib/i18n'
 import { useWeeklyDone } from './stores'
 
@@ -22,24 +19,8 @@ interface Props {
   words: Dictionary['urgency']
 }
 
-/**
- * Checklist semanal de un juego, con temporizador.
- *
- * El estado vive en localStorage atado al PERIODO semanal (ver
- * `weeklyWindowAt`): cuando la semana cambia, las marcas expiran solas y el
- * checklist arranca vacío — eso es el "temporizador" trabajando, no hay
- * código de limpieza. Sin cuenta, el progreso de la semana pasada se
- * quedaría marcado para siempre.
- *
- * El progreso se calcula por juego (`n/m`) en la cabecera; la cuenta atrás
- * de cada fila es la del propio evento, y la del RENUEVO semanal vive en la
- * mecha de la página, no aquí.
- */
-export function WeeklySection({ events, accentColor, gameName, labels, words }: Props) {
-  const now = useClock()
-  // `now === 0` = aún sin montar en cliente: sin periodo no se lee marca
-  // ninguna y la hidratación coincide con el servidor.
-  const periodId = now === 0 ? null : weeklyWindowAt(now).periodId
+export function WeeklySection({ events, accentColor, gameName, labels }: Props) {
+  const periodId = null // Disable clock reading for now
   const { done, toggle } = useWeeklyDone(periodId)
 
   if (events.length === 0) return null
@@ -83,15 +64,6 @@ export function WeeklySection({ events, accentColor, gameName, labels, words }: 
                 >
                   {event.title}
                 </span>
-                {/* Cuenta atrás del evento en sí: hasta su arranque si
-                    todavía no empezó (con la flecha de "empieza en"), hasta
-                    su final si está en marcha. */}
-                <CountdownLabel
-                  startDate={event.start_date}
-                  endDate={event.end_date}
-                  className="shrink-0"
-                  words={words}
-                />
               </label>
             </li>
           )

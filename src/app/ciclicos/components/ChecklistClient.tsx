@@ -4,6 +4,8 @@ import { useOptimistic, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CountdownLabel } from '@/components/ui/countdown'
+import { useClock } from '@/lib/use-clock'
+import { burnedFraction, timelineAt, urgencyColor } from '@/lib/urgency'
 import { toggleChecklistItem } from '../actions'
 import { pickTitle, type Dictionary, type Locale } from '@/lib/i18n/shared'
 import type { Database } from '@/lib/supabase/types'
@@ -56,6 +58,7 @@ export function ChecklistClient({
   const done = completedSet.size
   const total = items.length
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
+  const now = useClock()
 
   return (
     <section aria-labelledby={`checklist-heading-${gameName}`}>
@@ -95,6 +98,12 @@ export function ChecklistClient({
         {items.map((item) => {
           const isDone = completedSet.has(item.id)
           const hasDates = item.start_date && item.end_date
+          const burned = hasDates && now !== 0
+            ? burnedFraction(item.start_date!, item.end_date!, now)
+            : 0
+          const level = hasDates && now !== 0
+            ? timelineAt(item.start_date!, item.end_date!, now).level
+            : 'none'
           return (
             <li key={item.id}>
               <label
@@ -134,6 +143,20 @@ export function ChecklistClient({
                   {labels.categories[item.category] ?? item.category}
                 </span>
               </label>
+              {hasDates && (
+                <div
+                  className="mb-2 h-[2px] w-full bg-line"
+                  role="presentation"
+                >
+                  <div
+                    className="h-full transition-[width] duration-500 ease-out"
+                    style={{
+                      width: `${Math.round(burned * 100)}%`,
+                      backgroundColor: isDone ? 'var(--text-faint)' : urgencyColor(level),
+                    }}
+                  />
+                </div>
+              )}
             </li>
           )
         })}
