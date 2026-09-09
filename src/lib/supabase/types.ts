@@ -32,6 +32,10 @@ export type Database = {
           title: string
           title_en: string | null
           title_es: string | null
+          /** Fecha de inicio del ciclo de endgame (solo cíclicos). */
+          start_date?: string | null
+          /** Fecha de fin del ciclo de endgame (solo cíclicos). */
+          end_date?: string | null
         }
         Insert: {
           category?: Database["public"]["Enums"]["checklist_category"]
@@ -44,6 +48,8 @@ export type Database = {
           title: string
           title_en?: string | null
           title_es?: string | null
+          start_date?: string | null
+          end_date?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["checklist_category"]
@@ -56,6 +62,8 @@ export type Database = {
           title?: string
           title_en?: string | null
           title_es?: string | null
+          start_date?: string | null
+          end_date?: string | null
         }
         Relationships: [
           {

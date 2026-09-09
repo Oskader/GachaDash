@@ -3,27 +3,20 @@
 import { useOptimistic, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CountdownLabel } from '@/components/ui/countdown'
 import { toggleChecklistItem } from '../actions'
 import { pickTitle, type Dictionary, type Locale } from '@/lib/i18n/shared'
 import type { Database } from '@/lib/supabase/types'
 
 type ChecklistItemRow = Database['public']['Tables']['checklist_items']['Row']
 
-/**
- * El enum `checklist_category` vive en Postgres en inglés y no se migra: las
- * etiquetas se traducen al pintar, y ahora salen del diccionario en vez de
- * estar incrustadas aquí.
- */
-
 interface Props {
   items: ChecklistItemRow[]
-  /** IDs ya completados, calculados en el servidor. */
   completedIds: string[]
   accentColor: string
   locale: Locale
   labels: Dictionary['game']
   isSignedIn: boolean
-  /** La cabecera nombra al JUEGO con su stripe: aquí conviven varios. */
   gameName: string
 }
 
@@ -56,8 +49,6 @@ export function ChecklistClient({
     startTransition(async () => {
       addOptimistic(itemId)
       const result = await toggleChecklistItem(itemId, willBeCompleted)
-      // El error ya no se descarta: si RLS rechaza o cae la red, el usuario
-      // se entera y el estado optimista se deshace al revalidar.
       if (!result.ok) toast.error(result.error ?? labels.saveFailed)
     })
   }
@@ -86,8 +77,6 @@ export function ChecklistClient({
         </span>
       </div>
 
-      {/* Medidor de progreso: mismo lenguaje visual que la mecha, pero
-          aquí el color es el del juego porque mide logro, no urgencia. */}
       <div
         className="mb-5 h-[3px] w-full bg-line"
         role="progressbar"
@@ -105,6 +94,7 @@ export function ChecklistClient({
       <ul className="divide-y divide-line border-y border-line">
         {items.map((item) => {
           const isDone = completedSet.has(item.id)
+          const hasDates = item.start_date && item.end_date
           return (
             <li key={item.id}>
               <label
@@ -130,6 +120,13 @@ export function ChecklistClient({
                 >
                   {pickTitle(item, locale)}
                 </span>
+                {hasDates && !isDone && (
+                  <CountdownLabel
+                    startDate={item.start_date!}
+                    endDate={item.end_date!}
+                    className="shrink-0 text-xs"
+                  />
+                )}
                 <span
                   className="tabular shrink-0 text-[10px] uppercase tracking-wider text-dim"
                   aria-hidden="true"

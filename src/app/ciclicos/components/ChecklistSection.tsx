@@ -16,13 +16,10 @@ export async function ChecklistSection({
   accentColor: string
   locale: Locale
   labels: Dictionary['game']
-  /** Nombra al juego con su stripe en la cabecera: aquí conviven varios. */
   gameName: string
 }) {
   const supabase = await createClient()
 
-  // getUser() valida la firma del JWT; getSession() se limita a decodificar
-  // la cookie y darla por buena.
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -44,8 +41,6 @@ export async function ChecklistSection({
       .map((row) => row.checklist_item_id)
   }
 
-  // El aviso de sesión no va aquí: la página pinta UNO solo al final para
-  // todos los juegos, no un panel idéntico por juego.
   return (
     <ChecklistClient
       items={items}
