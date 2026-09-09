@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.wiki.gg" },
       { protocol: "https", hostname: "**.nocookie.net" },
       { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "cdn.prydwen.gg" },
     ],
     // Whitelist de qualities: Next 16 degrada silenciosamente cualquier prop
     // `quality` fuera de esta lista al primer valor (default: 75). La miniatura
