@@ -14,7 +14,7 @@ export interface ResolvedCharacter {
   characterName: string
   /** Nombre original del warp (para logging/debug) */
   bannerTitle: string
-  /** true si el mapeo es manual, false si se resolvió por fallback */
+  /** true si el personaje se resolvió desde BANNER_TO_CHARACTER */
   mapped: boolean
 }
 
@@ -23,6 +23,7 @@ export const BANNER_TO_CHARACTER: Record<string, string> = {
   'Summer Chorus': 'Robin Summeretto',
   'Over the Gilded Tides': 'Aventurine Waveflair',
   'A Hunt Through Night': 'Ashveil',
+  'A Rainbow onto Twilight': 'Hyacine',
   // Version 4.4
   'Ad Astra Nova': 'Himeko • Nova',
   'A Star That Lights the Night': 'Sparxie',
