@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { getI18n } from '@/lib/i18n'
@@ -16,37 +17,24 @@ export default async function JuegosPage() {
   const [{ data: games }, { data: events }] = await Promise.all([
     supabase
       .from('games')
-      .select('id, slug, name, color_accent')
+      .select('id, slug, name, color_accent, icon_url')
       .order('name'),
     supabase
       .from('events')
-      // `kind` tiene que venir en el payload: el filtro de semanales de abajo
-      // compara en memoria, y si la columna no se pide el filtro es un no-op
-      // silencioso.
       .select('game_id, kind, start_date, end_date')
       .eq('is_active', true)
       .gte('end_date', new Date(now).toISOString()),
   ])
 
-  // Un juego no se resume por su icono, se resume por lo que se te escapa.
-  //
-  // Lo que aún no ha empezado se cuenta aparte y NO entra en el próximo
-  // cierre: un evento anunciado que dura dos días puede acabar antes que uno
-  // en marcha, y entonces la cifra grande de la derecha anunciaba un plazo
-  // que todavía no corre.
   const summary = new Map<
     string,
     { count: number; upcoming: number; soonest: string | null }
   >()
-  // Los pausados (game-status.ts) no participan en los resúmenes: su fila se
-  // sigue mostrando, pero como «Próximamente», sin cifras ni cuenta atrás.
   const pausedIds = new Set(
     (games ?? []).filter((g) => isPausedGame(g.slug)).map((g) => g.id)
   )
   for (const event of events ?? []) {
     if (pausedIds.has(event.game_id)) continue
-    // Los semanales se cuentan en /ciclicos; aquí inflarían el número de
-    // eventos activos con uno que se repite cada semana.
     if (event.kind === 'weekly') continue
     const entry =
       summary.get(event.game_id) ?? { count: 0, upcoming: 0, soonest: null }
@@ -78,11 +66,22 @@ export default async function JuegosPage() {
                 href={`/${game.slug}`}
                 className="group flex items-center gap-4 py-4 transition-colors hover:bg-panel"
               >
-                <span
-                  className="h-10 w-[3px] shrink-0"
-                  style={{ backgroundColor: game.color_accent }}
-                  aria-hidden="true"
-                />
+                {game.icon_url ? (
+                  <Image
+                    src={game.icon_url}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 rounded-[2px] object-cover"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <span
+                    className="h-10 w-10 shrink-0 rounded-[2px]"
+                    style={{ backgroundColor: game.color_accent }}
+                    aria-hidden="true"
+                  />
+                )}
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-foreground">

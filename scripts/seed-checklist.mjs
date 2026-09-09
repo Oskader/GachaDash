@@ -38,7 +38,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 
 const headers = {
-  apikey: SERVICE_KEY,
+  apikey: `${SERVICE_KEY}`,
   Authorization: `Bearer ${SERVICE_KEY}`,
   'Content-Type': 'application/json',
 }
@@ -61,16 +61,10 @@ const CHECKLISTS = {
   // endfield.wiki.gg: Sanity, Operational Manual, AIC, Protocol Pass, Operator.
 
   'honkai-star-rail': [
-    ['Gastar el Poder de Travesía antes de que rebose', 'other', 'Spend Trailblaze Power before it overflows'],
-    ['Completar el Entrenamiento Diario', 'other', 'Complete Daily Training'],
-    ['Recoger y relanzar las Asignaciones', 'other', 'Collect and redispatch Assignments'],
-    ['Eco de Guerra: 3 intentos de la semana', 'other', 'Echo of War: 3 attempts this week'],
-    ['Universo Simulado de la semana', 'other', 'Simulated Universe for the week'],
-    ['Farmear reliquias en la Caverna de Corrosión', 'artifact', 'Farm Relics in Cavern of Corrosion'],
-    ['Farmear material de Conos de Luz', 'weapon', 'Farm Light Cone materials'],
-    ['Subir al personaje que estés trabajando', 'character', 'Level up the character you are working on'],
     ['Memoria del Caos: cerrar las 12 plantas', 'achievement', 'Memory of Chaos: clear all 12 floors'],
-    ['Ficción Pura y Sombra Apocalíptica del ciclo', 'achievement', 'Pure Fiction and Apocalyptic Shadow for the cycle'],
+    ['Ficción Pura del ciclo', 'achievement', 'Pure Fiction for the cycle'],
+    ['Sombra Apocalíptica del ciclo', 'achievement', 'Apocalyptic Shadow for the cycle'],
+    ['Arbitraje de Anomalías del ciclo', 'achievement', 'Anomaly Arbitration for the cycle'],
   ],
 
   'zenless-zone-zero': [
