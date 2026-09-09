@@ -61,10 +61,10 @@ const CHECKLISTS = {
   // endfield.wiki.gg: Sanity, Operational Manual, AIC, Protocol Pass, Operator.
 
   'honkai-star-rail': [
-    ['Memoria del Caos: cerrar las 12 plantas', 'achievement', 'Memory of Chaos: clear all 12 floors'],
-    ['Ficción Pura del ciclo', 'achievement', 'Pure Fiction for the cycle'],
-    ['Sombra Apocalíptica del ciclo', 'achievement', 'Apocalyptic Shadow for the cycle'],
-    ['Arbitraje de Anomalías del ciclo', 'achievement', 'Anomaly Arbitration for the cycle'],
+    ['Memoria del Caos', 'achievement', 'Memory of Chaos'],
+    ['Ficción Pura', 'achievement', 'Pure Fiction'],
+    ['Sombra Apocalíptica', 'achievement', 'Apocalyptic Shadow'],
+    ['Arbitraje de Anomalías', 'achievement', 'Anomaly Arbitration'],
   ],
 
   'zenless-zone-zero': [
