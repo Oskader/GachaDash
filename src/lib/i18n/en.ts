@@ -70,6 +70,7 @@ export const en: Dictionary = {
     close: 'Close',
     renewsIn: 'Renews in',
     weeklyHeading: 'Weeklies',
+    comingSoon: 'Coming soon',
     progressAria: 'Weekly events completed this week',
     emptyTitle: "You don't follow any games",
     emptyBody: 'Add the games you play to see their weeklies and endgame here.',

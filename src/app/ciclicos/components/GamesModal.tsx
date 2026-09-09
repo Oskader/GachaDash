@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { Dictionary } from '@/lib/i18n'
+import { isPausedGame } from '@/lib/game-status'
 
 interface Game {
   slug: string
@@ -119,24 +120,44 @@ export function GamesModal({ open, games, selected, onToggle, onToggleAll, onClo
         <ul className="py-2">
           {games.map((game) => {
             const checked = selected.includes(game.slug)
+            // Los pausados (game-status.ts) se enseñan para que se vea que el
+            // juego existe, pero sin checkbox: no hay semanales que seguir y
+            // dejarles elegir sería prometer una sección vacía.
+            const paused = isPausedGame(game.slug)
             return (
               <li key={game.slug}>
                 {/* label + Checkbox: el click en toda la fila marca, igual
                     que en el checklist de endgame. */}
-                <label className="flex cursor-pointer items-center gap-3 px-5 py-3 transition-colors hover:bg-panel-raised">
+                <label
+                  className={`flex items-center gap-3 px-5 py-3 transition-colors ${
+                    paused ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-panel-raised'
+                  }`}
+                >
                   {/* Identidad del juego: stripe de 3px, no un swatch */}
                   <span
                     className="h-5 w-[3px] shrink-0"
-                    style={{ backgroundColor: game.color_accent }}
+                    style={{ backgroundColor: game.color_accent, opacity: paused ? 0.4 : 1 }}
                     aria-hidden="true"
                   />
-                  <span className="flex-1 text-sm text-foreground">{game.name}</span>
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={() => onToggle(game.slug)}
-                    className="size-[18px] shrink-0 rounded-[2px] border-line-strong data-[state=checked]:border-transparent"
-                    style={checked ? { backgroundColor: game.color_accent, color: 'var(--ink)' } : undefined}
-                  />
+                  <span
+                    className={`flex-1 text-sm ${
+                      paused ? 'text-[var(--text-faint)]' : 'text-foreground'
+                    }`}
+                  >
+                    {game.name}
+                  </span>
+                  {paused ? (
+                    <span className="tabular shrink-0 text-[10px] uppercase tracking-wider text-dim">
+                      {labels.comingSoon}
+                    </span>
+                  ) : (
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => onToggle(game.slug)}
+                      className="size-[18px] shrink-0 rounded-[2px] border-line-strong data-[state=checked]:border-transparent"
+                      style={checked ? { backgroundColor: game.color_accent, color: 'var(--ink)' } : undefined}
+                    />
+                  )}
                 </label>
               </li>
             )

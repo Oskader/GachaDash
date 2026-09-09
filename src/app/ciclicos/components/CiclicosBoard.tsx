@@ -10,6 +10,7 @@ import {
   weeklyWindowAt,
 } from '@/lib/urgency'
 import type { Dictionary } from '@/lib/i18n'
+import { isPausedGame } from '@/lib/game-status'
 import { GamesModal } from './GamesModal'
 import { WeeklySection, type WeeklyEvent } from './WeeklySection'
 import { setFollowedGames, useFollowedGames } from './stores'
@@ -94,13 +95,19 @@ function WeeklyRenewalHeading({ labels }: { labels: Dictionary['ciclicos'] }) {
  * las reglas de pureza de React 19.
  */
 export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, words }: Props) {
-  // `null` = nunca eligió → se enseñan todos. `[]` = decidió no seguir
+  // `null` = nunca eligió → se enseñan los activos. `[]` = decidió no seguir
   // ninguno → estado vacío con invitación a elegir.
   const followed = useFollowedGames()
   const [pickerOpen, setPickerOpen] = useState(false)
   const closePicker = useCallback(() => setPickerOpen(false), [])
 
-  const selected = followed ?? games.map((game) => game.slug)
+  // Los pausados no participan en el default ni en "Todos": sin semanales
+  // que enseñar, seguirlos sería una sección vacía permanente. Un storage
+  // viejo que los nombre no rompe nada — simplemente no cuentan aquí.
+  const unpaused = games.filter((game) => !isPausedGame(game.slug))
+  const unpausedSet = new Set(unpaused.map((game) => game.slug))
+
+  const selected = followed ?? unpaused.map((game) => game.slug)
 
   const toggleGame = (slug: string) => {
     setFollowedGames(
@@ -111,10 +118,13 @@ export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, wo
   }
 
   const toggleAll = () => {
-    // "Todos" restaura el conjunto completo; no borra la elección, que
+    // "Todos" restaura el conjunto activo completo; no borra la elección, que
     // dejaría la página en el estado vacío de "no sigues nada".
-    setFollowedGames(games.map((game) => game.slug))
+    setFollowedGames([...unpausedSet])
   }
+
+  // El contador del botón cuenta solo lo que se puede seguir de verdad.
+  const followedCount = selected.filter((slug) => unpausedSet.has(slug)).length
 
   const visibleWeekly = weekly.filter(
     (section) => selected.includes(section.slug) && section.events.length > 0
@@ -136,7 +146,7 @@ export function CiclicosBoard({ games, weekly, endgame, signInNotice, labels, wo
           <Plus className="size-3.5" aria-hidden="true" />
           {labels.addGames}
           <span className="tabular text-[var(--text-faint)]">
-            {selected.length}/{games.length}
+            {followedCount}/{unpaused.length}
           </span>
         </button>
       </BoardToolbar>

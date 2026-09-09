@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/page-header'
 import { getI18n } from '@/lib/i18n'
+import { isPausedGame } from '@/lib/game-status'
 import { CiclicosBoard } from './components/CiclicosBoard'
 import { ChecklistSection } from './components/ChecklistSection'
 import type { Database } from '@/lib/supabase/types'
@@ -51,13 +52,21 @@ export default async function CiclicosPage() {
 
   // El recorte de columnas con embed no lo refleja el tipo generado, así
   // que se declara la forma real de lo que pide el select.
-  const weeklyEvents = (eventsResult.data ?? []) as unknown as WeeklyEvent[]
+  const allWeeklyEvents = (eventsResult.data ?? []) as unknown as WeeklyEvent[]
   const games = (gamesResult.data ?? []) as GameRow[]
   const checklistItems = (checklistResult.data ?? []) as ChecklistItemRow[]
   const user = auth.data.user
 
+  // Los pausados (game-status.ts) siguen teniendo filas en la BD a propósito;
+  // aquí no generan sección ni conteo. El selector del tablero sí los lista
+  // (como "Próximamente"), así que `games` viaja entero.
+  const weeklyEvents = allWeeklyEvents.filter(
+    (event) => !isPausedGame(event.games?.slug ?? '')
+  )
+  const activeGames = games.filter((game) => !isPausedGame(game.slug))
+
   // Semanales agrupados por juego, en el orden canónico de `games`.
-  const weekly = games.map((game) => ({
+  const weekly = activeGames.map((game) => ({
     slug: game.slug,
     name: game.name,
     color_accent: game.color_accent,
@@ -78,7 +87,7 @@ export default async function CiclicosPage() {
     checklistByGame.set(slug, list)
   }
 
-  const endgame = games
+  const endgame = activeGames
     .filter((game) => (checklistByGame.get(game.slug)?.length ?? 0) > 0)
     .map((game) => ({
       slug: game.slug,

@@ -101,6 +101,7 @@ export const es = {
     close: 'Cerrar',
     renewsIn: 'Se renueva en',
     weeklyHeading: 'Semanales',
+    comingSoon: 'Próximamente',
     progressAria: 'Eventos semanales completados esta semana',
     emptyTitle: 'No sigues ningún juego',
     emptyBody: 'Añade los juegos que juegas para ver aquí sus semanales y su endgame.',
