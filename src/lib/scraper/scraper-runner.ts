@@ -6,6 +6,7 @@ import { dedupeByTitle, dedupKey } from './normalize'
 import { fetchHoyoEnrichment } from './hoyo-announcements'
 import { fetchDescriptions } from './descriptions'
 import { translateToSpanish } from './translate'
+import { fetchSplashArt } from './splash-art'
 import { SOURCES } from './sources'
 import { isPausedGame } from '@/lib/game-status'
 import { classifyEvent } from './classify'
@@ -222,6 +223,22 @@ export async function runScraperForGame(
       .map((r) => ({ key: r.event.title, textEn: r.description_en as string }))
   )
 
+  // Splash art para banners sin imagen (personajes de HSR).
+  // Se hace ANTES del merge final para que image_url ya resuelto compita
+  // en igualdad con extra?.banner y event.image_url.
+  const splashArtPromises = resolved
+    .filter((r) => {
+      const kind = classifyEvent({ title: r.event.title, start_date: r.event.start_date, end_date: r.event.end_date }, gameSlug)
+      return kind === 'banner' && !r.event.image_url && !r.extra?.banner && gameSlug === 'honkai-star-rail'
+    })
+    .map(async (r) => {
+      const url = await fetchSplashArt(r.event.title, source.wikiHost)
+      return { key: r.event.title, url }
+    })
+
+  const splashArtResults = await Promise.all(splashArtPromises)
+  const splashArtByTitle = new Map(splashArtResults.map((s) => [s.key, s.url]))
+
   const rows = resolved.map(({ event, extra, prev, ...resolvedRow }) => {
     const description_en = resolvedRow.description_en
     const description_es =
@@ -237,8 +254,18 @@ export async function runScraperForGame(
     // El último es lo guardado: una pasada sin imagen NO puede borrar una
     // buena, igual que con las descripciones. Una wiki puede romper una
     // imagen un día y arreglarla al siguiente.
-    const image_url = extra?.banner ?? event.image_url ?? prev?.image_url ?? null
+    const image_url =
+      extra?.banner ??
+      event.image_url ??
+      splashArtByTitle.get(event.title) ??
+      prev?.image_url ??
+      null
     if (!image_url) missingImage++
+
+    // Loggear banners sin mapear (pre-release, etc.)
+    if (event.characterMapped === false) {
+      console.warn(`[${gameSlug}] banner sin mapear: "${event.bannerTitle}" (se guarda tal cual)`)
+    }
 
     // El tablón oficial da la hora exacta; la wiki solo el día.
     const start_date = extra?.start_date ?? event.start_date

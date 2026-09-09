@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 import { parseDuration } from './dates'
 import { cleanTitle } from './normalize'
+import { resolveCharacterFromBanner } from './banner-character-map'
 
 /**
  * Parseo determinista de las listas de eventos.
@@ -36,6 +37,10 @@ export interface ParsedEvent {
    * verdad, y `mw-broken-media` no emite `<img>`, así que cae solo.
    */
   image_url?: string
+  /** Nombre original del warp, antes del mapeo. Para logging/debug. */
+  bannerTitle?: string
+  /** true si el personaje se resolvió desde BANNER_TO_CHARACTER */
+  characterMapped?: boolean
 }
 
 /** El enlace de la celda apunta a la página del evento; File: y rojos no valen. */
@@ -291,8 +296,8 @@ export function parseHsrWarps(html: string, section: string, host: string): Pars
         return href.startsWith('/wiki/') && !href.includes(':') && $(a).text().trim() !== ''
       }).first()
 
-      const title = cleanTitle($(linkEl).text())
-      if (!title) return
+      const rawTitle = cleanTitle($(linkEl).text())
+      if (!rawTitle) return
 
       const img = $(bannerDiv).find('img').first()
       const src = img.attr('data-src') ?? img.attr('src')
@@ -304,15 +309,20 @@ export function parseHsrWarps(html: string, section: string, host: string): Pars
       // Saltar banners de colaboración Fate (permanentes/semi-permanentes).
       // Estos no son banners de gacha rotativos: Saber, Archer, Rin, Gilgamesh,
       // Excalibur, Enuma Elish... son una colaboración indefinida.
-      if (/fate|saber|archer|rin|gilgamesh|excalibur|enuma elish|gem coursing|bone of my sword/i.test(title)) return
+      if (/fate|saber|archer|rin|gilgamesh|excalibur|enuma elish|gem coursing|bone of my sword/i.test(rawTitle)) return
+
+      // Resolver personaje desde el nombre del warp.
+      const resolved = resolveCharacterFromBanner(rawTitle)
 
       out.push({
-        title,
+        title: resolved.characterName,
         start_date: dates.start_date,
         end_date: dates.end_date,
         section,
         pageTitle: $(linkEl).attr('title') || undefined,
         image_url: absoluteImageUrl(src, host),
+        bannerTitle: resolved.bannerTitle,
+        characterMapped: resolved.mapped,
       })
     })
   })
