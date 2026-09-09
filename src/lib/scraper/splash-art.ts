@@ -3,7 +3,8 @@
  *
  * Orden de preferencia:
  *   1. Fandom — splash art vía API, tiene personajes pre-release y post-release
- *   2. Prydwen — full art, alta calidad, pero NO tiene pre-release
+ *   2. Star Rail Station — splash art de alta calidad, requiere scrapear la página
+ *   3. Prydwen — full art, alta calidad, pero NO tiene pre-release
  *
  * Ninguna lanza: si todo falla, devuelve null y el evento queda sin imagen
  * (el runner lo reporta en el dry-run).
@@ -85,6 +86,47 @@ export async function fandomSplashArt(
   }
 }
 
+/**
+ * Busca splash art en Star Rail Station.
+ * 
+ * Star Rail Station tiene splash art de alta calidad para personajes
+ * pre-release y post-release. La URL no es predecible (usa hashes),
+ * así que scrapeamos la página del personaje para obtener la imagen.
+ */
+export async function starRailStationSplashArt(
+  characterName: string
+): Promise<string | null> {
+  try {
+    // Convertir nombre a slug para la URL
+    const slug = characterName
+      .toLowerCase()
+      .replace(/[''•]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+
+    const pageUrl = `https://starrailstation.com/en/character/${slug}`
+    const res = await fetch(pageUrl, {
+      headers: { 'User-Agent': UA, Accept: 'text/html' },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return null
+
+    const html = await res.text()
+    
+    // Buscar og:image o twitter:image
+    const ogMatch = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)
+    if (ogMatch?.[1]) return ogMatch[1]
+
+    const twitterMatch = html.match(/<meta[^>]+property="twitter:image"[^>]+content="([^"]+)"/i)
+    if (twitterMatch?.[1]) return twitterMatch[1]
+
+    return null
+  } catch {
+    return null
+  }
+}
+
 export interface SplashArtOptions {
   /** Skip Prydwen (útil si sabemos que es pre-release) */
   skipPrydwen?: boolean
@@ -93,7 +135,7 @@ export interface SplashArtOptions {
 /**
  * Punto de entrada único: busca splash art por todas las fuentes.
  *
- * Orden: Fandom primero (tiene pre-release), luego Prydwen (solo post-release).
+ * Orden: Fandom primero (tiene pre-release), luego Star Rail Station, luego Prydwen.
  */
 export async function fetchSplashArt(
   characterName: string,
@@ -104,7 +146,11 @@ export async function fetchSplashArt(
   const fandomUrl = await fandomSplashArt(characterName, host)
   if (fandomUrl) return fandomUrl
 
-  // 2. Prydwen — solo para personajes ya lanzados
+  // 2. Star Rail Station — splash art de alta calidad
+  const starRailUrl = await starRailStationSplashArt(characterName)
+  if (starRailUrl) return starRailUrl
+
+  // 3. Prydwen — solo para personajes ya lanzados
   if (!options.skipPrydwen) {
     const prydwenUrl = prydwenSplashUrl(characterName)
     if (prydwenUrl) {
