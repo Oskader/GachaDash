@@ -55,15 +55,21 @@ const ANCHORS = {
   'memory-of-chaos': '2026-08-26T00:00:00Z',
   'pure-fiction': '2026-08-19T00:00:00Z',
   'apocalyptic-shadow': '2026-09-02T00:00:00Z',
+  'anomaly-arbitration': '2026-08-26T00:00:00Z', // Se renueva por versión (5-6 semanas)
 }
 
-const CYCLE_DAYS = 21
+const CYCLE_DAYS = {
+  'memory-of-chaos': 21,
+  'pure-fiction': 21,
+  'apocalyptic-shadow': 21,
+  'anomaly-arbitration': 35, // ~5 semanas por versión
+}
 
-function calculateCycles(anchorStr, numProjects) {
+function calculateCycles(anchorStr, numProjects, cycleDays) {
   const anchor = new Date(anchorStr)
   const now = new Date()
   const cycles = []
-  const msPerCycle = CYCLE_DAYS * 24 * 60 * 60 * 1000
+  const msPerCycle = cycleDays * 24 * 60 * 60 * 1000
   
   const diffMs = now.getTime() - anchor.getTime()
   const cyclesSinceAnchor = Math.floor(diffMs / msPerCycle)
@@ -96,9 +102,10 @@ async function main() {
   const items = await rest(`checklist_items?select=id,title&game_id=eq.${hsrGame.id}&category=eq.achievement`)
   
   const titleToSlug = {
-    'Memoria del Caos': 'memory-of-chaos',
-    'Ficción Pura': 'pure-fiction',
-    'Sombra Apocalíptica': 'apocalyptic-shadow',
+      'Memoria del Caos': 'memory-of-chaos',
+      'Ficción Pura': 'pure-fiction',
+      'Sombra Apocalíptica': 'apocalyptic-shadow',
+      'Arbitraje de Anomalías': 'anomaly-arbitration',
   }
   
   for (const item of items) {
@@ -114,7 +121,7 @@ async function main() {
       continue
     }
     
-    const cycles = calculateCycles(anchor, PROJECTS_AHEAD)
+    const cycles = calculateCycles(anchor, PROJECTS_AHEAD, CYCLE_DAYS[slug])
     
     const now = Date.now()
     const currentCycle = cycles.find(c => 
